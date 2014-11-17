@@ -7,7 +7,10 @@ Purpose:         Control arduino 4WD robot using L293D Intergrated circuit
 
 const int controlPin1 = 2; // connected to pin 7 on the H-bridge
 const int controlPin2 = 3; // connected to pin 2 on the H-bridge
+const int controlPin3 = 12; 
+const int controlPin4 = 13; 
 const int enablePin = 9;   // connected to pin 1 on the H-bridge
+const int enablePin1 = 10;  
 const int directionSwitchPin = 4;  // connected to the switch for direction
 const int onOffSwitchStateSwitchPin = 5; // connected to the switch for turning the motor on and off
 const int potPin = A0;  // connected to the potentiometer's output
@@ -28,10 +31,14 @@ void setup() {
   pinMode(onOffSwitchStateSwitchPin, INPUT);
   pinMode(controlPin1, OUTPUT);
   pinMode(controlPin2, OUTPUT);
+  pinMode(controlPin3, OUTPUT);
+  pinMode(controlPin4, OUTPUT);
   pinMode(enablePin, OUTPUT);
+  pinMode(enablePin1, OUTPUT);
 
   // pull the enable pin LOW to start
   digitalWrite(enablePin, LOW);
+  digitalWrite(enablePin1, LOW);
 }
 
 void loop() {
@@ -67,20 +74,26 @@ void loop() {
   if (motorDirection == 1) {
     digitalWrite(controlPin1, HIGH);
     digitalWrite(controlPin2, LOW);
+    digitalWrite(controlPin3, HIGH);
+    digitalWrite(controlPin4, LOW);
   }
   else {
     digitalWrite(controlPin1, LOW);
     digitalWrite(controlPin2, HIGH);
+    digitalWrite(controlPin3, LOW);
+    digitalWrite(controlPin4, HIGH);
   }
 
   // if the motor is supposed to be on
   if (motorEnabled == 1) {
     // PWM the enable pin to vary the speed
     analogWrite(enablePin, motorSpeed);
+    analogWrite(enablePin1, motorSpeed);
   }
   else { // if the motor is not supposed to be on
     //turn the motor off
     analogWrite(enablePin, 0);
+    analogWrite(enablePin1, 0);
   }
   // save the current On/Offswitch state as the previous
   previousDirectionSwitchState = directionSwitchState;
