@@ -5,6 +5,16 @@ Purpose:         Control arduino 4WD robot using L293D Intergrated circuit
                   The robot also has a ultrasonic sensor on the front to tell when it is going to hit an object - all very simple stuff for now
 */
 
+//import ultra-sonic sensor library
+#include <NewPing.h>
+
+#define TRIGGER_PIN  7  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define ECHO_PIN     6  // Arduino pin tied to echo pin on the ultrasonic sensor.
+#define MAX_DISTANCE 200 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
+
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
+
+//setup all the pins for the IC
 const int controlPin1 = 2; // connected to pin 7 on the H-bridge
 const int controlPin2 = 3; // connected to pin 2 on the H-bridge
 const int controlPin3 = 12; 
@@ -26,6 +36,8 @@ int motorSpeed = 0; // speed of the motor
 int motorDirection = 1; // current direction of the motor
 
 void setup() {
+  Serial.begin(115200); // Start the serial monitor
+  
   // intialize the inputs and outputs
   pinMode(directionSwitchPin, INPUT);
   pinMode(onOffSwitchStateSwitchPin, INPUT);
@@ -42,6 +54,17 @@ void setup() {
 }
 
 void loop() {
+    unsigned int uS = sonar.ping(); // Send ping, get ping time in microseconds (uS).
+    unsigned int cm = (uS / US_ROUNDTRIP_CM); // Convert ping time to distance in cm and print result (0 = outside set distance range)
+    
+    //if close to something just switch off
+    if (cm < 13){
+      driveBackwards("left");
+      delay(1600);
+      stopDriving(4000);
+      driveForwards();
+    }
+    
   // read the value of the on/off switch
   onOffSwitchState = digitalRead(onOffSwitchStateSwitchPin);
   delay(1);
@@ -65,17 +88,14 @@ void loop() {
   if (directionSwitchState != previousDirectionSwitchState) {
     // change the value of motorDirection if pressed
     if (directionSwitchState == HIGH) {
-      motorDirection = !motorDirection;
+      changeDirection();
     }
   }
 
   // change the direction the motor spins by talking
   // to the control pins on the H-Bridge
   if (motorDirection == 1) {
-    digitalWrite(controlPin1, HIGH);
-    digitalWrite(controlPin2, LOW);
-    digitalWrite(controlPin3, HIGH);
-    digitalWrite(controlPin4, LOW);
+    driveForwards();
   }
   else {
     digitalWrite(controlPin1, LOW);

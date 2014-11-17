@@ -1,0 +1,3 @@
+void changeDirection(){
+  motorDirection = !motorDirection;
+  }
